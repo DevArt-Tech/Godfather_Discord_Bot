@@ -83,7 +83,7 @@ bot = commands.Bot(command_prefix='p!', intents=intents, help_command=None)
 # Evento cuando el bot está listo
 @bot.event
 async def on_ready():
-    message = f'¡Hola! Soy {str(bot.user).split('#')[:-1][0]}. ¡Encantado de estar aquí para ayudarte a rolear!'
+    message = '¡Encantado de estar aquí para ayudarte a rolear!'
     print(message)
 
 
