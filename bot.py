@@ -3,10 +3,14 @@ from threading import Thread
 
 import discord
 import random
+import json
 
+from discord import app_commands
+from discord.ext import commands
 from flask import Flask
 
-from discord.ext import commands
+import config as c
+import wit_ai_methods as wit_ai
 
 # permissions
 intents = discord.Intents.default()
@@ -26,107 +30,81 @@ intents.reactions = True
 # Configura tu aplicación Flask (aunque no la uses realmente)
 app = Flask('')
 
+DISCORD_TOKEN = "MTI3OTc1MTEyMjc2ODEwNTUxNA.Gkr79K.ZIJXWl47DN7YTlMoW_pP7qOdzFkOt0RYiZRG1g" #os.environ["discord_token"]
+WIT_AI_TOKEN = "AFV7F2L662E455LMIXZLABDBX4XSJHDI" #os.environ["wit_ai_token"]
+
+# Configura tu bot con los intents y el prefijo
+bot = commands.Bot(command_prefix='!', intents=intents, help_command=None)
+
 
 @app.route('/')
 def index():
     return "El bot de Discord está corriendo."
 
 
-DISCORD_TOKEN = os.environ["discord_token"]
-
-config = {
-    "bot_answers": [
-        "tienes agallas al venir a pedirme algo así. Veremos si eres digno de esta misión...",
-        "¿crees que estás listo para algo grande? No todos pueden manejarlo. Adelante...",
-        "si estás buscando una oportunidad, asegúrate de no decepcionarme. Aquí tienes tu misión.",
-        "te daré lo que pides, pero recuerda: si fallas, no habrá segundas oportunidades...",
-        "bien, me gusta tu ambición. Pero asegúrate de que esa hambre no te lleve a un mal paso.",
-        "no es un trabajo fácil. Si aceptas, más te vale cumplirlo sin errores. ¿Entendido?",
-        "eres valiente al pedirlo. Pero la valentía sin inteligencia es un billete directo al cementerio. Más vale que tengas cuidado.",
-        "si te doy esta misión, es porque confío en que no me defraudarás. No me hagas lamentarlo.",
-        "te daré una tarea, pero cuidado si te metes en problemas.",
-        "que quede claro: si te doy esta misión, es porque espero resultados, no excusas...",
-        "si quieres probarte, aquí tienes tu oportunidad. No la desperdicies...",
-        "te daré una tarea, pero recuerda: no es un juego. Quiero resultados.",
-        "lo que me estás pidiendo no es fácil. Espero que estés a la altura.",
-        "tienes mi atención. No me hagas arrepentirme de confiar en ti.",
-        "está bien, te lo concedo. Pero no olvides quién manda aquí.",
-        "veremos si tienes lo que se necesita. No me falles.",
-        "si te encargas de esto, más te vale hacerlo bien. Mi paciencia tiene límites.",
-        "te lo daré, pero a cambio, espero tu lealtad absoluta y un trabajo impecable.",
-        "tienes el deseo, ahora muéstrame que también tienes las habilidades.",
-        "si te doy esta misión, estaré observando cada uno de tus movimientos. No me des una razón para dudar de ti."
-    ],
-    "games": {
-        "habbo": {
-            "missions": {
-                "Intimida a externos": "Intimida a propietarios o miembros de famiglias, negocios o imperios para que entiendan qué facción manda en el hotel, es decir, nosotros.",
-                "Tráfico de Armas": "Transporta un arma y trafícala ilegalmente a compradores en diferentes partes del hotel.",
-                "Contrabando de Drogas": "Distribuye drogas por el hotel, evitando los Staffs y rivales.",
-                "Contrabando Internacional": "Viaja a origins.com y organiza la exportación de items ilegales (armas, drogas, etc).",
-                "Asesinato por Encargo": "Investiga quién puede ser un enemigo para la famiglia o para alguno de nuestros miembros y elimínalo.",
-                "Ajuste de Cuentas": "Encuentra y elimina a un traidor dentro de la organización o a un rival de otra facción.",
-                "Espionaje Industrial": "Infiltrate en un imperio, famiglia u organización y roba información que pueda ser de interés para tus superiores.",
-                "Grabación de Conversaciones": "Instalate un micrófono oculto en un lugar clave para obtener información sobre los rivales. Retransmite esa conversación en un canal de voz.",
-                "Secuestro de Rivales": "Secuestra a un miembro importante de una facción rival para pedir un rescate o usarlo como moneda de cambio.",
-                "Conquista de Zonas": "Toma el control de una facción contraria. Controlala, impón tu presencia o petale su inmobiliario.",
-                "Establecimiento de Bases": "Crea nuevas bases o salas para la famiglia, que nos permitan expandirnos como famiglia en el hotel.",
-                "Protección de Territorio": "Defiende el territorio de la mafia contra ataques de rivales",
-                "Reclutamiento de Nuevos Miembros": "Busca y recluta a nuevos miembros para la organización, evaluando sus habilidades.",
-                "Formación y Entrenamiento": "Entrena a nuevos reclutas en tácticas de combate, espionaje, o manejo de armas.",
-                "Prueba de Lealtad": "Somete a los nuevos integrantes a pruebas para demostrar su lealtad. Intenta que quebranten las normas de la famiglia y enseñales de qué pasta estamos hechos.",
-                "Destrucción de Propiedades": "Ataca y destruye propiedades o negocios de un enemigo para enviar un mensaje de quien manda.",
-                "Mantenimiento de Infraestructura": "Asegurate de que los puntos de reunión y otros activos de la mafia estén seguros y operativos. Puertas cerradas, ports volteados... Investiga todas las salas de la famiglia.",
-                "Difusión de Propaganda": "Difunde rumores o desinformación para desacreditar a rivales o manipular la opinión pública de otras organizaciones. Por el contrario, difunde buenas criticas de nuestra famiglia.",
-                "Organización de Fiestas": "Organiza eventos sociales para consolidar alianzas o mostrar poder dentro de la comunidad. Utiliza el bar de la famiglia para ello.",
-                "Investigación de Rivales": "Recopila información sobre las operaciones, puntos débiles, y estructura de una facción rival.",
-                "Operaciones en el Extranjero": "Ejecuta una operación criminal en otro país (origins.com) para expandir la influencia y reconocimiento de la famiglia.",
-                "Ayuda a tus miembros heridos": "Ve al hospital y cura a tus compañeros heridos después de un encuentro peligroso con otras facciones."
-            }
-        }
-    }
-}
-
-# Configura tu bot con los intents y el prefijo
-bot = commands.Bot(command_prefix='p!', intents=intents, help_command=None)
-
-
-# Evento cuando el bot está listo
 @bot.event
 async def on_ready():
-    message = '¡Encantado de estar aquí para ayudarte a rolear!'
-    print(message)
+    print(f'Bot is ready. Logged in as {bot.user}')
+    try:
+        synced = await bot.tree.sync()  # Sync the slash commands with Discord
+        print(f'Synced {len(synced)} command(s)')
+    except Exception as e:
+        print(f'Failed to sync commands: {e}')
 
 
-@bot.command()
-async def status(ctx):
-    await ctx.send(f"¿Te pensabas que me había ido a alguna parte, <@{ctx.author.id}>?")
+@bot.tree.command(name="status")
+async def status(interaction: discord.Interaction):
+    """Informa sobre si el bot está conectado o no."""
+    bot_answer = give_random_answer("status")
+    await interaction.response.send_message(bot_answer)
 
 
-@bot.command()
-async def mission(ctx, game: str = 'habbo'):
-    if config is not None:
-        bot_anwser = random.choice(config["bot_answers"])
-        print(f'Respuesta escogida: {bot_anwser}')
+@bot.tree.command(name="mision")
+async def mission(interaction: discord.Interaction, member_to_give_mission: discord.Member):
+    """Pide una mision al Padrino de la Famiglia para que la completes."""
+    if c.config is not None:
+        bot_answer = give_random_answer("mission")
 
-        await ctx.send(f"<@{ctx.author.id}>, {bot_anwser}")
+        await interaction.response.send_message(f"{member_to_give_mission.mention}, {bot_answer}")
 
-        pairs = list(config["games"][game]["missions"].items())
+        pairs = list(c.config["mission"]["games"]["habbo"]["missions"].items())
 
         random_pair = random.choice(pairs)
 
-        embed = discord.Embed(
-            title=f'{random_pair[0]}',
-            description=f'{random_pair[1]}',
-            color=discord.Color.from_rgb(199, 179, 76)  # Color amarillo/beige
-        )
-        await ctx.send(embed=embed)
+        # Obtener los roles del usuario
+        user_roles = member_to_give_mission.roles
+        role_names = [role.name for role in user_roles]
+        ranks = c.config["ranks"]
 
-    else:
-        print("No se pudieron cargar los datos de missions.json.")
+        # Convertir listas a conjuntos y encontrar la intersección
+        intersection_roles = list(set(ranks) & set(role_names))
+        rank = ""
+        if len(intersection_roles) != 0:
+            rank = intersection_roles[0]
+
+        embed = discord.Embed(title="Mision asignada", color=discord.Color.from_rgb(199, 179, 76))
+        embed.set_thumbnail(url=member_to_give_mission.avatar.url)  # Si el usuario tiene un avatar
+        embed.add_field(name="Miembro", value=member_to_give_mission.mention, inline=True)
+        embed.add_field(name="Rango", value=rank, inline=True)
+        embed.add_field(name="Titulo de Misión", value=f"{random_pair[0]}", inline=True)
+        embed.add_field(name="Descripción", value=f"{random_pair[1]}", inline=True)
+
+        await interaction.followup.send(embed=embed)
+
+@bot.tree.command(name="duda")
+@app_commands.describe(message="Realiza la pregunta que quieras hacer")
+async def question(interaction: discord.Interaction, message: str):
+    """Responde a tu pregunta usando IA"""
+    # response = wit_ai.get_message(message, WIT_AI_TOKEN)
+    await interaction.response.send_message(message)
 
 
-# Función para correr el bot en un hilo separado
+def give_random_answer(command):
+    if c.config is not None:
+        bot_anwser = random.choice(c.config[command]["bot_answers"])
+        print(f'Respuesta escogida: {bot_anwser}')
+        return bot_anwser
+
 def run_bot():
     bot.run(DISCORD_TOKEN)
 
@@ -135,4 +113,4 @@ def run_bot():
 Thread(target=run_bot).start()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8081)

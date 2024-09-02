@@ -1,2 +1,4 @@
 discord.py
 flask
+requests
+discord-py-interactions
