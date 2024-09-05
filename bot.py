@@ -14,7 +14,7 @@ from datetime import datetime
 
 import config as c
 import wit_ai_methods as wit_ai
-from online_members_command import create_json_habbo_response, PaginationView
+from online_members_command import create_json_habbo_response
 
 # permissions
 intents = discord.Intents.default()
@@ -109,33 +109,17 @@ async def onlinemembers(interaction: discord.Interaction):
 
     json_response = create_json_habbo_response(guild)
 
-    '''embed = discord.Embed(title=json_response["title"], color=discord.Color.from_rgb(199, 179, 76))
-    for field in json_response["fields"]:
-        embed.add_field(name="Nombre", value=field["Nombre"], inline=True)
-        embed.add_field(name="Online", value=field["Online"], inline=True)
-        embed.add_field(name="Ult. conexión", value=field["Ult. Conexión"], inline=True)
-
-    await interaction.response.send_message(embed=embed)'''
-
-    # Crear embeds
-    embeds = []
-    page_size = 10  # Número de miembros por página
-    fields = json_response["fields"]
-    for i in range(0, len(fields), page_size):
-        embed = discord.Embed(title=json_response["title"], color=discord.Color.from_rgb(199, 179, 76))
-        page_fields = fields[i:i + page_size]
-        for field in page_fields:
+    embed = discord.Embed(title=json_response["title"], color=discord.Color.from_rgb(199, 179, 76))
+    if json_response["fields"]:
+        for field in json_response["fields"]:
             embed.add_field(name="Nombre", value=field["Nombre"], inline=True)
             embed.add_field(name="Online", value=field["Online"], inline=True)
             embed.add_field(name="Ult. conexión", value=field["Ult. Conexión"], inline=True)
-        embeds.append(embed)
 
-    if embeds:
-        view = PaginationView(embeds)
-        await interaction.response.send_message(embed=embeds[0], view=view)
+        await interaction.response.send_message(embed=embed)
     else:
-        await interaction.response.send_message("No hay información disponible.")
-
+        embed.add_field(name="Ops", value="No hay miembros conectados", inline=True)
+        await interaction.response.send_message(embed=embed)
 
 
 '''@bot.tree.command(name="duda")
