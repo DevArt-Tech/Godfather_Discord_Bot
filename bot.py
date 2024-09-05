@@ -34,9 +34,9 @@ intents.reactions = True
 # Configura tu aplicación Flask (aunque no la uses realmente)
 app = Flask('')
 
-DISCORD_TOKEN = os.environ["discord_token"]
+DISCORD_TOKEN = "MTI3OTc1MTEyMjc2ODEwNTUxNA.Ge9uZS.k6tP6WE1ckyZyWNkBE8q1HWQBSBffGR-aTkfFw" #os.environ["discord_token"]
 #WIT_AI_TOKEN = #os.environ["wit_ai_token"]
-SERVER_NAME = os.environ["discord_server_name"]
+SERVER_NAME = "test" #os.environ["discord_server_name"]
 
 # Configura tu bot con los intents y el prefijo
 bot = commands.Bot(command_prefix='p!', intents=intents, help_command=None)
@@ -102,6 +102,9 @@ async def mission(interaction: discord.Interaction, member_to_give_mission: disc
 @bot.tree.command(name="onlinemembers")
 async def onlinemembers(interaction: discord.Interaction):
     """Devuelve una lista de los miembros del servidor de discord que están online en Habbo"""
+
+    await interaction.response.send_message("Estoy recopilando la información, por favor espera...")
+
     guild = discord.utils.get(bot.guilds, name=SERVER_NAME)
     if guild is None:
         await interaction.response.send_message("No he encontrado ningun miembro en el servidor.")
@@ -116,10 +119,10 @@ async def onlinemembers(interaction: discord.Interaction):
             embed.add_field(name="Online", value=field["Online"], inline=True)
             embed.add_field(name="Ult. conexión", value=field["Ult. Conexión"], inline=True)
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
     else:
         embed.add_field(name="Ops", value="No hay miembros conectados", inline=True)
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
 
 
 '''@bot.tree.command(name="duda")

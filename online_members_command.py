@@ -21,11 +21,6 @@ def create_json_habbo_response(guild):
                 "Ult. Conexión": formatted_date
             })
 
-    response_dict["fields"] = sorted(response_dict["fields"], key=lambda x: x["Ult. Conexión"],
-                                     reverse=True)  # Ordena por fecha
-    response_dict["fields"] = sorted(response_dict["fields"], key=lambda x: x["Online"],
-                                     reverse=True)  # Ordena por conexion
-
     return response_dict
 
 
