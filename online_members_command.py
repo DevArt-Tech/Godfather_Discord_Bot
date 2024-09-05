@@ -1,6 +1,34 @@
 from datetime import datetime
 
+import discord
 import requests
+from discord.ui import View
+
+
+class PaginationView(View):
+    def __init__(self, embeds):
+        super().__init__()
+        self.embeds = embeds
+        self.current_page = 0
+        self.update_buttons()
+
+    @discord.ui.button(label="◀️", style=discord.ButtonStyle.primary, disabled=True)
+    async def previous_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if self.current_page > 0:
+            self.current_page -= 1
+            await interaction.message.edit(embed=self.embeds[self.current_page])
+            self.update_buttons()
+
+    @discord.ui.button(label="▶️", style=discord.ButtonStyle.primary)
+    async def next_button(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if self.current_page < len(self.embeds) - 1:
+            self.current_page += 1
+            await interaction.message.edit(embed=self.embeds[self.current_page])
+            self.update_buttons()
+
+    def update_buttons(self):
+        self.children[0].disabled = self.current_page == 0
+        self.children[1].disabled = self.current_page == len(self.embeds) - 1
 
 
 def create_json_habbo_response(guild):

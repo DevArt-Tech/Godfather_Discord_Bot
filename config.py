@@ -3,7 +3,7 @@ config = {
         "Novellino", "Soldato", "Piciotto",
         "Capo", "Capodecine", "Caporegime",
         "Avvocato",
-        "Numerale", "Consigliere", "Sottocapo", "Don", "Capo di Tutti Capi"
+        "Numerale", "Consigliere", "Sottocapo", "Don", "Capo Di Tutti Capi"
     ],
     "question": {
         "intents": {
