@@ -35,7 +35,7 @@ intents.reactions = True
 app = Flask('')
 
 DISCORD_TOKEN = os.environ["discord_token"]
-#WIT_AI_TOKEN = "AFV7F2L662E455LMIXZLABDBX4XSJHDI" #os.environ["wit_ai_token"]
+#WIT_AI_TOKEN = #os.environ["wit_ai_token"]
 SERVER_NAME = os.environ["discord_server_name"]
 
 # Configura tu bot con los intents y el prefijo
