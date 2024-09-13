@@ -17,9 +17,12 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Cache Docker layers
-        uses: docker/cache-action@v2
+        uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-build-
 
       - name: Build Docker image
         uses: docker/build-push-action@v3
@@ -33,6 +36,9 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          mkdir -p /home/runner/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no -i /home/runner/.ssh/id_rsa root@31.220.82.248 << 'EOF'
             cd root/projects/Discord_Bots/Godfather_Discord_Bot
             docker-compose pull
