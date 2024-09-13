@@ -40,7 +40,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no -i /home/runner/.ssh/id_rsa root@31.220.82.248 << 'EOF'
-            cd root/projects/Discord_Bots/Godfather_Discord_Bot
+            cd projects/Discord_Bots/Godfather_Discord_Bot
             docker-compose pull
             docker-compose build
             docker-compose up -d
